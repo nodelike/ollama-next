@@ -1,12 +1,18 @@
 // SettingsPanel.js
-import React, { useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useChat } from "@/context/context";
 import toast from "react-hot-toast";
 
 function SettingsPanel() {
     const { state, dispatch } = useChat();
-    const personaNameRef = useRef(null);
-    const personaDescriptionRef = useRef(null);
+    const [formPersona, setFormPersona] = useState({ name: "", description: "" });
+
+    useEffect(() => {
+        setFormPersona(state.currentPersona || { name: "", description: "" });
+        if (state.currentPersona) {
+            localStorage.setItem("currentPersona", JSON.stringify(state.currentPersona));
+        }
+    }, [state.currentPersona]);
 
     const handleModelChange = (event) => {
         const modelName = event.target.value;
@@ -19,26 +25,31 @@ function SettingsPanel() {
         if (personaName !== "createPersona") {
             const selectedPersona = state.personas.find((p) => p.name === personaName);
             dispatch({ type: "SET_CURRENT_PERSONA", payload: selectedPersona });
-            localStorage.setItem("personaName", personaName);
+            localStorage.setItem("currentPersona", JSON.stringify(selectedPersona));
+            dispatch({ type: "SET_CURRENT_CHAT_INDEX", payload: null });
         } else {
-            dispatch({ type: "SET_CURRENT_PERSONA", payload: { name: "", description: "" } });
+            setFormPersona({ name: "", description: "" });
         }
+    };
+
+    const handleFormChange = (event) => {
+        const { name, value } = event.target;
+        setFormPersona(prev => ({ ...prev, [name]: value }));
     };
 
     const handlePersonaSubmit = (event) => {
         event.preventDefault();
-        const personaName = personaNameRef.current.value;
-        const personaDescription = personaDescriptionRef.current.value;
 
         try {
-            const newPersona = { name: personaName, description: personaDescription };
-            const updatedPersonas = state.currentPersona.name ? state.personas.map((p) => (p.name === state.currentPersona.name ? newPersona : p)) : [...state.personas, newPersona];
+            const updatedPersonas = state.currentPersona?.name
+                ? state.personas.map((p) => (p.name === state.currentPersona.name ? formPersona : p))
+                : [...state.personas, formPersona];
 
             dispatch({ type: "UPDATE_PERSONAS", payload: updatedPersonas });
-            dispatch({ type: "SET_CURRENT_PERSONA", payload: newPersona });
+            dispatch({ type: "SET_CURRENT_PERSONA", payload: formPersona });
             localStorage.setItem("personas", JSON.stringify(updatedPersonas));
-            localStorage.setItem("personaName", personaName);
-            toast.success(state.currentPersona.name ? "Persona updated successfully!" : "Persona created successfully!");
+            localStorage.setItem("currentPersona", JSON.stringify(formPersona));
+            toast.success(state.currentPersona?.name ? "Persona updated successfully!" : "Persona created successfully!");
         } catch (error) {
             toast.error(`Error in creating/updating persona: ${error.message}`);
         }
@@ -46,7 +57,6 @@ function SettingsPanel() {
 
     return (
         <div className={`flex-shrink-0 flex flex-col gap-6 py-4 px-6 transition-all duration-300 ease-in-out ${state.sidePanel.isOpen ? "opacity-100" : "opacity-0"}`}>
-            {" "}
             {/* Model selection */}
             <div className="flex flex-col gap-3">
                 <h4 className="font-semibold text-lg">Select Model:</h4>
@@ -89,17 +99,19 @@ function SettingsPanel() {
             {/* Persona form */}
             <form className="flex flex-col gap-4" onSubmit={handlePersonaSubmit}>
                 <input
-                    ref={personaNameRef}
                     type="text"
+                    name="name"
                     className="w-full px-4 py-2 bg-tertiary rounded-md border border-borderColor focus:outline-none"
                     placeholder="Enter persona name..."
-                    defaultValue={state.currentPersona?.name || ""}
+                    value={formPersona.name}
+                    onChange={handleFormChange}
                 />
                 <textarea
-                    ref={personaDescriptionRef}
+                    name="description"
                     className="w-full p-4 bg-tertiary rounded-md border border-borderColor focus:outline-none"
                     placeholder="Enter persona description..."
-                    defaultValue={state.currentPersona?.description || ""}
+                    value={formPersona.description}
+                    onChange={handleFormChange}
                 />
                 <button className="text-black bg-accent py-2 px-4 rounded-md border border-borderColor" type="submit">
                     {state.currentPersona?.name ? "Update" : "Create"}

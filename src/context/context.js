@@ -1,10 +1,11 @@
 // ChatContext.js
-import React, { createContext, useContext, useReducer, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
 
 const ChatContext = createContext();
 
 const initialState = {
-  messages: [{ role: "assistant", content: "Hello there!" }],
+  chats: [],
+  currentChatIndex: null,
   personas: [],
   models: [],
   currentModel: null,
@@ -15,8 +16,23 @@ const initialState = {
 
 function chatReducer(state, action) {
   switch (action.type) {
-    case 'UPDATE_MESSAGES':
-      return { ...state, messages: action.payload };
+    case 'SET_CHATS':
+      return { ...state, chats: action.payload };
+    case 'ADD_CHAT':
+      return { 
+        ...state, 
+        chats: [...state.chats, action.payload], 
+        currentChatIndex: state.chats.length 
+      };
+    case 'SET_CURRENT_CHAT_INDEX':
+      return { ...state, currentChatIndex: action.payload };
+    case 'UPDATE_CURRENT_CHAT':
+      return {
+        ...state,
+        chats: state.chats.map((chat, index) =>
+          index === state.currentChatIndex ? action.payload : chat
+        ),
+      };
     case 'UPDATE_PERSONAS':
       return { ...state, personas: action.payload };
     case 'SET_MODELS':
@@ -29,6 +45,8 @@ function chatReducer(state, action) {
       return { ...state, isResponseStreaming: action.payload };
     case 'SET_SIDE_PANEL':
       return { ...state, sidePanel: action.payload };
+    case 'RESET_CHATS':
+      return { ...state, chats: [], currentChatIndex: null };
     default:
       return state;
   }
@@ -36,9 +54,18 @@ function chatReducer(state, action) {
 
 export function ChatProvider({ children }) {
   const [state, dispatch] = useReducer(chatReducer, initialState);
-  
+
+  useEffect(() => {
+    const storedChats = JSON.parse(localStorage.getItem('chats')) || [];
+    dispatch({ type: 'SET_CHATS', payload: storedChats });
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('chats', JSON.stringify(state.chats));
+  }, [state.chats]);
+
   const value = useMemo(() => ({ state, dispatch }), [state]);
-  
+
   return (
     <ChatContext.Provider value={value}>
       {children}

@@ -13,22 +13,27 @@ function ChatContainerInner() {
     const initializeChat = async () => {
       const modelsData = await ollama.list();
       dispatch({ type: 'SET_MODELS', payload: modelsData.models });
-
-      const model = localStorage.getItem("model") || null;
-      dispatch({ type: 'SET_CURRENT_MODEL', payload: model });
-
+      
       const storedPersonas = JSON.parse(localStorage.getItem("personas")) || [];
       dispatch({ type: 'UPDATE_PERSONAS', payload: storedPersonas });
-
-      const personaName = localStorage.getItem("personaName") || null;
-      if (personaName) {
-        const persona = storedPersonas.find((p) => p.name === personaName);
-        dispatch({ type: 'SET_CURRENT_PERSONA', payload: persona || null });
+      
+      if (state.currentChatIndex !== null) {
+        const currentChat = state.chats[state.currentChatIndex];
+        dispatch({ type: 'SET_CURRENT_MODEL', payload: currentChat.modelName });
+        const currentPersona = storedPersonas.find(p => p.name === currentChat.personaName);
+        dispatch({ type: 'SET_CURRENT_PERSONA', payload: currentPersona || null });
+      } else {
+        const model = localStorage.getItem("model") || null;
+        dispatch({ type: 'SET_CURRENT_MODEL', payload: model });
+        const persona = JSON.parse(localStorage.getItem("currentPersona")) || null;
+        if (persona) {
+          dispatch({ type: 'SET_CURRENT_PERSONA', payload: persona });
+        }
       }
     };
 
     initializeChat();
-  }, [dispatch]);
+  }, [dispatch, state.currentChatIndex]);
 
   return (
     <div className="w-full flex justify-between overflow-hidden">
