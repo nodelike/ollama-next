@@ -39,7 +39,7 @@ function ChatContainerInner() {
     <div className="w-full flex justify-between overflow-hidden">
       <SidePanel />
       <div className="h-full w-full flex justify-center">
-        <div className="bg-secondary w-full max-w-3xl flex flex-col justify-between border-x border-borderColor">
+        <div className="w-full max-w-3xl flex flex-col justify-between">
           <MessageList />
           <MessageForm />
         </div>

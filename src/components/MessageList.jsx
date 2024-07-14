@@ -20,7 +20,7 @@ function MessageList() {
   );
 
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="p-4 flex flex-col gap-4 h-full">
       {currentChat ? (
         <>
           {currentChat.messages.map((message, index) => 
@@ -34,7 +34,7 @@ function MessageList() {
             renderMessage({ role: "assistant", content: "..." }, currentChat.messages.length, true)}
         </>
       ) : (
-        <p className="text-center text-gray-500">Start a new chat by sending a message.</p>
+        <p className="text-center text-gray-500 self-center my-auto ">Start a new chat by sending a message.</p>
       )}
     </div>
   );

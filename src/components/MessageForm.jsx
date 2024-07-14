@@ -66,7 +66,7 @@ function MessageForm() {
   };
 
   return (
-    <form className="bg-primary w-full flex gap-4 px-3 py-4 border-t border-borderColor" onSubmit={handleMessageSubmit}>
+    <form className="bg-primary w-full flex gap-4 px-3 py-4 pb-10 rounded-md border-x border-t border-borderColor" onSubmit={handleMessageSubmit}>
       <input ref={messageRef} className="w-full bg-transparent focus:outline-none border border-borderColor rounded-md px-5 py-3" type="text" placeholder="Enter message..." />
       <button type="submit" className="border border-borderColor px-4 rounded-md text-accent" disabled={state.isResponseStreaming}>
         <TbSend2 size={24} />
