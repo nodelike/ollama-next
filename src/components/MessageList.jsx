@@ -8,7 +8,7 @@ function MessageList() {
 
   const renderMessage = (message, index, isStreaming = false) => (
     <div key={`message-${index}`} className={`flex ${message.role === "user" ? "flex-row-reverse" : "flex-row"} gap-4`}>
-      <img className="w-10 h-10 rounded-full object-cover border border-borderColor" src={`${message.role}.png`} alt={`${message.role} avatar`} />
+      <img className="w-10 h-10 rounded-full object-cover border border-borderColor" src={`${message.role}.jpeg`} alt={`${message.role} avatar`} />
       <p className={`bg-tertiary max-w-3/4 px-5 py-2 flex flex-col rounded-md border border-borderColor ${isStreaming ? "animate-pulse" : ""}`}>
         {message.role === "assistant" && currentChat?.personaName && <span className="uppercase text-accent font-medium text-sm">{currentChat.personaName}</span>}
         <span>
