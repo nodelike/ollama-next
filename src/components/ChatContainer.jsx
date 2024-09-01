@@ -4,7 +4,10 @@ import { ChatProvider, useChat } from '@/context/context';
 import MessageList from './MessageList';
 import MessageForm from './MessageForm';
 import SidePanel from './SidePanel';
-import ollama from "ollama/browser";
+import { Ollama } from 'ollama/browser'
+import { OLLAMA_ENDPOINT } from './constants';
+
+const ollama = new Ollama({ host: OLLAMA_ENDPOINT })
 
 function ChatContainerInner() {
   const { state, dispatch } = useChat();

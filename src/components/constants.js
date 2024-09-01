@@ -1,0 +1,1 @@
+export const OLLAMA_ENDPOINT = "http://192.168.190.163:11434";

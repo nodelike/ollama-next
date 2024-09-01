@@ -1,8 +1,12 @@
 import React, { useRef, useState } from "react";
 import { TbSend2, TbSquareRoundedX } from "react-icons/tb";
-import ollama from "ollama/browser";
 import { useChat } from "@/context/context";
 import toast from "react-hot-toast";
+import { OLLAMA_ENDPOINT } from "./constants";
+import { Ollama } from 'ollama/browser'
+
+const ollama = new Ollama({ host: OLLAMA_ENDPOINT })
+
 
 function MessageForm() {
   const { state, dispatch } = useChat();
