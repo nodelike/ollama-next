@@ -36,7 +36,7 @@ function ChatContainerInner() {
   }, [dispatch, state.currentChatIndex]);
 
   return (
-    <div className="w-full flex flex-col md:flex-row justify-between overflow-hidden">
+    <div className="w-full flex justify-between overflow-hidden">
       <SidePanel />
       <div className="h-full w-full flex justify-center">
         <div className="w-full max-w-3xl flex flex-col justify-between mx-8">
