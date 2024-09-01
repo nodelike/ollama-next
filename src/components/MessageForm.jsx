@@ -7,12 +7,14 @@ import toast from "react-hot-toast";
 function MessageForm() {
   const { state, dispatch } = useChat();
   const messageRef = useRef(null);
-  const [abortController, setAbortController] = useState(null);
+  const [isAborting, setIsAborting] = useState(false); // State to track aborting
 
   const handleMessageSubmit = async (e) => {
     e.preventDefault();
+
     const message = messageRef.current.value.trim();
     if (!message) return;
+
     messageRef.current.value = "";
 
     const newUserMessage = { role: "user", content: message };
@@ -37,54 +39,56 @@ function MessageForm() {
     }
 
     dispatch({ type: "SET_RESPONSE_STREAMING", payload: true });
+
     const currentPersona = state.personas.find((p) => p.name === currentChat.personaName);
-    let persona = { role: "system", content: currentPersona?.description || "You are an AI assistant named Dolphin." };
+    let persona = {
+      role: "system",
+      content: currentPersona?.description || "You are an AI assistant named Dolphin.",
+    };
 
     try {
-      const controller = new AbortController();
-      setAbortController(controller);
-
+      setIsAborting(false); // Reset aborting flag
       const response = await ollama.chat({
         model: currentChat.modelName,
         messages: [persona, ...currentChat.messages],
         stream: true,
-        signal: controller.signal,
       });
 
       let fullResponse = "";
       let isFirstChunk = true;
 
       for await (const part of response) {
+        if (isAborting) break; // Check if the abort flag is set
+
         fullResponse += part.message.content;
+
         if (isFirstChunk) {
           currentChat.messages = [...currentChat.messages, { role: "assistant", content: fullResponse }];
           isFirstChunk = false;
         } else {
           currentChat.messages[currentChat.messages.length - 1].content = fullResponse;
         }
+
         dispatch({
           type: "UPDATE_CURRENT_CHAT",
           payload: currentChat,
         });
       }
-    } catch (error) {
-      if (error.name === "AbortError") {
+
+      if (isAborting) {
         toast.success("Message generation stopped");
-      } else {
-        toast.error("Error in chat:", error);
       }
+    } catch (error) {
+      toast.error(`Error in chat: ${error.message}`);
     } finally {
       dispatch({ type: "SET_RESPONSE_STREAMING", payload: false });
-      setAbortController(null);
+      setIsAborting(false); // Ensure abort flag is reset
     }
   };
 
   const handleStopGeneration = () => {
-    if (abortController) {
-      abortController.abort();
-      setAbortController(null);
-      dispatch({ type: "SET_RESPONSE_STREAMING", payload: false });
-    }
+    setIsAborting(true); // Set the abort flag to true
+    dispatch({ type: "SET_RESPONSE_STREAMING", payload: false });
   };
 
   return (
